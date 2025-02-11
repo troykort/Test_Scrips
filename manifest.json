@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Auto Add to Cart",
+  "version": "1.0",
+  "description": "Automatically selects a product and adds it to cart to try and order it.",
+  "permissions": ["scripting", "activeTab", "tabs", "storage", "downloads"],
+  "host_permissions": ["https://www.kamera-express.nl/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "start-auto-cart": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Q"
+      },
+      "description": "Run the Auto Cart Script"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.kamera-express.nl/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
