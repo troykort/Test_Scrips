@@ -41,16 +41,29 @@ async function fillInput(selector, value) {
 }
 
 
-// **Step 1: Select Sony A7 IV**
+// **Step 1: Select a Random Product**
 async function selectProduct() {
-    console.log("🔍 Searching for Sony A7 IV...");
-    const productLink = await waitForElement("a[href='/sony-a7-iv-body']");
+    console.log("🔍 Searching for available products...");
+
+    // Wait for product links to appear
+    await waitForElement("a.product-card-outer-container", 10000);
+
+    // Get all product links from the product cards
+    let productLinks = Array.from(document.querySelectorAll("a.product-card-outer-container"));
+
+    if (productLinks.length === 0) {
+        console.error("❌ No products found on the page.");
+        return;
+    }
+
+    // Select a random product
+    let randomProduct = productLinks[Math.floor(Math.random() * productLinks.length)];
     
     localStorage.setItem("autoCartRunning", "true");
     localStorage.setItem("step", "1");
 
-    productLink.click();
-    console.log("✅ Sony A7 IV selected!");
+    console.log(`✅ Random product selected: ${randomProduct.href}`);
+    randomProduct.click();
 }
 
 // **Step 2: Click "In Winkelwagen"**
@@ -59,7 +72,7 @@ async function addToCart() {
     await new Promise(resolve => setTimeout(resolve, 3000));
 
     console.log("📜 Scrolling down...");
-    window.scrollBy(0, 600);
+    window.scrollBy(0, 300);
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log("🛒 Clicking 'In Winkelwagen'...");
@@ -72,7 +85,11 @@ async function addToCart() {
 // **Step 3: Click "Bestellen"**
 async function proceedToCheckout() {
     console.log("⏳ Waiting for 'Bestellen' button...");
-    await new Promise(resolve => setTimeout(resolve, 4000));
+    await new Promise(resolve => setTimeout(resolve, 8000));
+
+    console.log("📜 Scrolling Up...");
+    window.scrollBy(0,-300);
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log("📦 Clicking 'Bestellen'...");
     await clickElement("button.sf-button[data-dd-action-name='view-cart']");
@@ -142,10 +159,10 @@ async function login() {
 }
 
 
-// **Step 6: Click "Betalen met iDEAL" and Take Screenshot**
+// **Step 6: Click "Betalen met iDEAL" and Send a notification**
 async function payWithIdeal() {
     console.log("⏳ Waiting for checkout page to load...");
-    await new Promise(resolve => setTimeout(resolve, 7000));
+    await new Promise(resolve => setTimeout(resolve, 12000));
 
     console.log("🔍 Searching for 'Betalen met iDEAL' button...");
     const idealButton = await waitForElement("button.full-width.sf-button[data-dd-action-name='order-and-pay']", 20000);
@@ -156,36 +173,30 @@ async function payWithIdeal() {
     console.log("🎉 Payment process initiated!");
     localStorage.setItem("step", "5");
 
-    // Wait extra time to ensure the next page loads before taking a screenshot
-    await new Promise(resolve => setTimeout(resolve, 7000)); // Adjust this delay if needed
-
-    console.log("📸 Taking screenshot...");
-    chrome.runtime.sendMessage({ action: "takeScreenshot" }, (response) => {
-        if (response && response.success) {
-            console.log("✅ Screenshot saved!");
-        } else {
-            console.error("❌ Failed to capture screenshot.");
-        }
-    });
+    // Schedule notification step after 30 seconds
+    setTimeout(sendNotificationStep, 10000);
 }
-
-// **Step 6: Take a screenshot after clicking "Betalen met iDEAL"**
-async function captureScreenshot() {
-    console.log("📸 Capturing screenshot...");
-
-    // Extra delay to ensure the payment confirmation page loads fully
-    await new Promise(resolve => setTimeout(resolve, 20000)); // Increased from 5s to 10s
-
-    // Send message to background script to capture screenshot
-    chrome.runtime.sendMessage({ action: "takeScreenshot" }, (response) => {
+/*
+// **Step 7: Send Notification**
+function sendNotificationStep() {
+    console.log("📢 Sending notification request...");
+    chrome.runtime.sendMessage({ action: "showNotification" }, (response) => {
         if (response && response.success) {
-            console.log("✅ Screenshot saved successfully!");
+            console.log("✅ Notification displayed!");
         } else {
-            console.error("❌ Failed to capture screenshot.");
+            console.error("❌ Failed to show notification.");
         }
     });
 
+    // Update localStorage to indicate step 7 is reached
     localStorage.setItem("step", "6");
+}
+    */
+
+// **Step 7: Send Notification**
+function sendNotificationStep() {
+    console.log("📢 Checkout completed! Displaying alert.");
+    alert("✅ Order process completed!");
 }
 
 
